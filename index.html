@@ -3,266 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>T-Fit ELITE Pro</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;600&display=swap');
-
         :root {
-            --bg: #000000;
-            --bg-card: #121212;
-            --accent: #FF6B00;
-            --text: #ffffff;
-            --text-dim: #888888;
-            --border: rgba(255, 255, 255, 0.1);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --bg: #050505; --card: #121212; --accent: #FF6B00; --accent-glow: rgba(255, 107, 0, 0.3);
+            --text: #FFFFFF; --text-dim: #888; --brd: rgba(255,255,255,0.08);
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Barlow', sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- ANIMAZIONI ENGINE --- */
-        .anim-box {
-            width: 100%;
-            height: 220px;
-            background: #0a0a0a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .human { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
-        
-        @keyframes push { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(30px); } }
-        @keyframes pull { 0%, 100% { transform: translateY(35px); } 50% { transform: translateY(0); } }
-        @keyframes squat { 0%, 100% { transform: scaleY(1); transform-origin: bottom; } 50% { transform: scaleY(0.6); transform-origin: bottom; } }
-        @keyframes crunch { 0%, 100% { transform: rotate(0deg); transform-origin: 80px 140px; } 50% { transform: rotate(-30deg); transform-origin: 80px 140px; } }
-
-        .anim-push { animation: push 2s ease-in-out infinite; }
-        .anim-pull { animation: pull 2s ease-in-out infinite; }
-        .anim-squat { animation: squat 2s ease-in-out infinite; }
-        .anim-crunch { animation: crunch 1.5s ease-in-out infinite; }
-
-        /* --- UI COMPONENTS --- */
-        .screen { display: none; flex: 1; flex-direction: column; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
-        .screen.active { display: flex; }
-
-        h1, h2 { font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; font-weight: 900; }
-        .accent-text { color: var(--accent); }
-
-        .card {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border);
-        }
-
-        .btn {
-            background: var(--accent);
-            color: black;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 700;
-            font-size: 18px;
-            text-transform: uppercase;
-            width: 100%;
-            cursor: pointer;
-        }
-
-        .set-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(255,255,255,0.05);
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-        }
-        .set-row.completed { border: 1px solid var(--accent); background: rgba(255,107,0,0.1); }
-
-        nav {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: rgba(0,0,0,0.95);
-            display: flex;
-            justify-content: space-around;
-            padding: 15px 0 calc(15px + var(--safe-bottom));
-            border-top: 1px solid var(--border);
-        }
-        .nav-item { color: var(--text-dim); text-decoration: none; font-size: 11px; text-transform: uppercase; font-weight: 700; text-align: center; }
-        .nav-item.active { color: var(--accent); }
-
-        #timer-display {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-size: 64px;
-            text-align: center;
-            color: var(--accent);
-            margin: 10px 0;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing: antialiased; }
+        body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; height: 100vh; overflow: hidden; }
+        .anim-stage { width: 100%; height: 280px; background: radial-gradient(circle, #1a1a1a 0%, #050505 100%); display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 2px solid var(--accent); }
+        .silhouette { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 8px var(--accent-glow)); }
+        .ground { stroke: #333; stroke-width: 2; }
+        @keyframes push-up { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(40px); } }
+        @keyframes squat-pro { 0%, 100% { transform: scaleY(1); transform-origin: bottom; } 50% { transform: scaleY(0.5) translateY(10px); } }
+        @keyframes pull-up-pro { 0%, 100% { transform: translateY(50px); } 50% { transform: translateY(0); } }
+        @keyframes crunch-pro { 0%, 100% { transform: rotate(0deg); transform-origin: 100px 150px; } 50% { transform: rotate(-35deg); } }
+        .ani-push { animation: push-up 2s ease-in-out infinite; }
+        .ani-squat { animation: squat-pro 2.5s ease-in-out infinite; }
+        .ani-pull { animation: pull-up-pro 2s ease-in-out infinite; }
+        .ani-core { animation: crunch-pro 1.8s ease-in-out infinite; }
+        .screen { display: none; height: 100vh; flex-direction: column; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
+        .active { display: flex; }
+        h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 38px; text-transform: uppercase; }
+        .accent { color: var(--accent); }
+        .exercise-card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--brd); display: flex; align-items: center; justify-content: space-between; }
+        .btn-main { background: var(--accent); color: #000; border: none; padding: 18px; border-radius: 15px; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 20px; text-transform: uppercase; width: 100%; cursor: pointer; }
+        .set-pill { background: #1a1a1a; border: 1px solid var(--brd); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .set-pill.done { border-color: var(--accent); background: var(--accent-glow); }
+        nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: space-around; padding: 20px 0; border-top: 1px solid var(--brd); }
+        .nav-btn { color: var(--text-dim); text-decoration: none; font-weight: 700; font-size: 12px; text-transform: uppercase; }
+        .nav-btn.active { color: var(--accent); }
     </style>
 </head>
 <body>
-
     <section id="dash" class="screen active">
-        <h1 style="font-size: 32px; margin-bottom: 20px;">T-FIT <span class="accent-text">ELITE</span></h1>
-        <div id="active-plan-card">
-            <div class="card">
-                <h2 id="plan-title">CARICAMENTO...</h2>
-                <p id="plan-info" style="color: var(--text-dim); margin-bottom: 15px;">-- Esercizi</p>
-                <button class="btn" onclick="startWorkout()">Inizia Allenamento</button>
+        <h1>T-FIT <span class="accent">ELITE</span></h1>
+        <div class="exercise-card" style="margin-top:20px;">
+            <div><h2 style="font-family:'Barlow Condensed'">TOTAL BODY PLAN</h2><p id="total-stats">40 Esercizi Pronti</p></div>
+        </div>
+        <button class="btn-main" onclick="startWorkout()">Inizia</button>
+    </section>
+    <section id="player" class="screen" style="padding:0;">
+        <div class="anim-stage" id="stage"></div>
+        <div style="padding: 20px;">
+            <h2 id="ex-name" style="font-size: 32px; font-family:'Barlow Condensed'">ESERCIZIO</h2>
+            <p id="ex-meta" style="color:var(--accent); margin-bottom:20px; font-weight:600">CATEGORIA</p>
+            <div id="sets-container"></div>
+            <div style="margin-top: 30px; display: flex; gap: 10px;">
+                <button class="btn-main" style="background:#222; color:#fff;" onclick="prevEx()">Indietro</button>
+                <button class="btn-main" onclick="nextEx()">Prossimo</button>
             </div>
         </div>
     </section>
-
-    <section id="player" class="screen">
-        <div class="anim-box" id="anim-container"></div>
-        
-        <div style="margin-top: 20px;">
-            <h2 id="ex-name" style="font-size: 28px;">NOME ESERCIZIO</h2>
-            <p id="ex-cat" style="color: var(--accent); font-weight: 600; margin-bottom: 20px;">CATEGORIA</p>
-        </div>
-
-        <div id="sets-list"></div>
-
-        <div id="timer-display">01:30</div>
-        
-        <div style="display: flex; gap: 10px; margin-top: auto;">
-            <button class="btn" style="background: #222; color: white; flex: 1;" onclick="nextExercise()">Salta</button>
-            <button class="btn" style="flex: 2;" onclick="startRest()">Recupero</button>
-        </div>
-    </section>
-
-    <nav>
-        <a href="#" class="nav-item active" onclick="showScreen('dash')">Dashboard</a>
-        <a href="#" class="nav-item" onclick="showScreen('player')">Allenamento</a>
-        <a href="#" class="nav-item">Progressione</a>
-    </nav>
-
+    <nav><a href="#" class="nav-btn active">Home</a><a href="#" class="nav-btn">Workout</a><a href="#" class="nav-btn">Elite</a></nav>
 <script>
-    // --- DATABASE COMPLETO (40 Esercizi) ---
-    const LIBRARY = {
-        // PETTO
-        'panca_piana': { n: 'Panca Piana', c: 'Petto', t: 'push' },
-        'push_up': { n: 'Push Up', c: 'Petto', t: 'push' },
-        'dips': { n: 'Dips Parallele', c: 'Petto/Tric', t: 'push' },
-        'croci_cavi': { n: 'Croci ai Cavi', c: 'Petto', t: 'push' },
-        // DORSO
-        'trazioni': { n: 'Trazioni alla Sbarra', c: 'Dorso', t: 'pull' },
-        'lat_machine': { n: 'Lat Machine', c: 'Dorso', t: 'pull' },
-        'rematore': { n: 'Rematore Manubrio', c: 'Dorso', t: 'pull' },
-        'pulley': { n: 'Pulley Basso', c: 'Dorso', t: 'pull' },
-        // GAMBE
-        'squat': { n: 'Squat Libero', c: 'Gambe', t: 'legs' },
-        'leg_press': { n: 'Leg Press', c: 'Gambe', t: 'legs' },
-        'affondi': { n: 'Affondi Alternati', c: 'Gambe', t: 'legs' },
-        'stacchi_gt': { n: 'Stacchi Gambe Tese', c: 'Gambe/Glutei', t: 'legs' },
-        // SPALLE
-        'military_press': { n: 'Military Press', c: 'Spalle', t: 'push' },
-        'alzate_laterali': { n: 'Alzate Laterali', c: 'Spalle', t: 'push' },
-        // BRACCIA
-        'curl_manubri': { n: 'Curl Manubri', c: 'Bicipiti', t: 'pull' },
-        'pushdown': { n: 'Pushdown Cavi', c: 'Tricipiti', t: 'push' },
-        // CORE
-        'crunch': { n: 'Crunch Addominale', c: 'Core', t: 'core' },
-        'plank': { n: 'Plank Isometrico', c: 'Core', t: 'core' }
-        // ... (Il sistema mappa automaticamente i restanti 22 basandosi sul tipo t)
-    };
-
-    // --- ENGINE ANIMAZIONI SVG ---
-    const ANIMS = {
-        push: `<svg viewBox="0 0 200 200" width="150"><g class="human anim-push"><line x1="40" y1="100" x2="160" y2="100"/><circle cx="170" cy="100" r="10"/><line x1="50" y1="100" x2="50" y2="130"/><line x1="120" y1="100" x2="120" y2="130"/></g><line x1="20" y1="140" x2="180" y2="140" stroke="#333" stroke-width="4"/></svg>`,
-        pull: `<svg viewBox="0 0 200 200" width="150"><line x1="40" y1="30" x2="160" y2="30" stroke="#333" stroke-width="6"/><g class="human anim-pull"><circle cx="100" cy="60" r="10"/><line x1="100" y1="70" x2="100" y2="130"/><path d="M60,80 L100,70 L140,80"/></g></svg>`,
-        legs: `<svg viewBox="0 0 200 200" width="150"><g class="human anim-squat"><circle cx="100" cy="50" r="10"/><line x1="100" y1="60" x2="100" y2="120"/><line x1="100" y1="120" x2="80" y2="150"/><line x1="80" y1="150" x2="100" y2="180"/></g><line x1="20" y1="185" x2="180" y2="185" stroke="#333" stroke-width="4"/></svg>`,
-        core: `<svg viewBox="0 0 200 200" width="150"><g class="human anim-crunch"><line x1="40" y1="140" x2="140" y2="140"/><circle cx="150" cy="130" r="10"/></g><line x1="20" y1="155" x2="180" y2="155" stroke="#333" stroke-width="4"/></svg>`
-    };
-
-    // --- LOGICA APP ---
-    let currentWorkout = [
-        { id: 'panca_piana', sets: 4, reps: 10 },
-        { id: 'trazioni', sets: 3, reps: 8 },
-        { id: 'squat', sets: 4, reps: 12 },
-        { id: 'crunch', sets: 3, reps: 20 }
+    const DB = [
+        { n: 'Push Up', c: 'Petto', t: 'push' }, { n: 'Panca Piana', c: 'Petto', t: 'push' }, { n: 'Military Press', c: 'Spalle', t: 'push' },
+        { n: 'Dips', c: 'Tricipiti', t: 'push' }, { n: 'Squat', c: 'Gambe', t: 'squat' }, { n: 'Affondi', c: 'Gambe', t: 'squat' },
+        { n: 'Leg Press', c: 'Gambe', t: 'squat' }, { n: 'Trazioni', c: 'Dorso', t: 'pull' }, { n: 'Lat Machine', c: 'Dorso', t: 'pull' },
+        { n: 'Rematore', c: 'Dorso', t: 'pull' }, { n: 'Crunch', c: 'Core', t: 'core' }, { n: 'Leg Raise', c: 'Core', t: 'core' },
+        { n: 'Plank', c: 'Core', t: 'core' }, { n: 'Curl Bicipiti', c: 'Braccia', t: 'pull' }, { n: 'Pushdown', c: 'Tricipiti', t: 'push' },
+        { n: 'Alzate Laterali', c: 'Spalle', t: 'push' }, { n: 'Stacchi', c: 'Gambe', t: 'squat' }, { n: 'Hip Thrust', c: 'Glutei', t: 'squat' },
+        { n: 'Burpees', c: 'Full Body', t: 'push' }, { n: 'Arnold Press', c: 'Spalle', t: 'push' }, { n: 'V-Ups', c: 'Core', t: 'core' },
+        { n: 'Face Pull', c: 'Spalle', t: 'pull' }, { n: 'Calf Raise', c: 'Gambe', t: 'squat' }, { n: 'Hammer Curl', c: 'Braccia', t: 'pull' },
+        { n: 'Diamant Pushup', c: 'Tricipiti', t: 'push' }, { n: 'Step Up', c: 'Gambe', t: 'squat' }, { n: 'Russian Twist', c: 'Core', t: 'core' },
+        { n: 'Chin Ups', c: 'Dorso', t: 'pull' }, { n: 'Skull Crusher', c: 'Tricipiti', t: 'push' }, { n: 'Bulgarian Squat', c: 'Gambe', t: 'squat' },
+        { n: 'Sumo Squat', c: 'Gambe', t: 'squat' }, { n: 'Bicycle Crunch', c: 'Core', t: 'core' }, { n: 'Panca Inclinata', c: 'Petto', t: 'push' },
+        { n: 'Fly Manubri', c: 'Petto', t: 'push' }, { n: 'Pulley', c: 'Dorso', t: 'pull' }, { n: 'Mountain Climber', c: 'Core', t: 'push' },
+        { n: 'Dips Panca', c: 'Tricipiti', t: 'push' }, { n: 'Stacchi GT', c: 'Gambe', t: 'squat' }, { n: 'Trazioni Inverse', c: 'Dorso', t: 'pull' },
+        { n: 'Piegamenti Declinati', c: 'Petto', t: 'push' }
     ];
-    let currentIdx = 0;
-    let timerInterval;
-
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+    const GRAPHICS = {
+        push: `<svg viewBox="0 0 200 200" width="180"><g class="silhouette ani-push"><line x1="40" y1="120" x2="160" y2="120"/><circle cx="175" cy="120" r="12"/><line x1="60" y1="120" x2="60" y2="160"/><line x1="130" y1="120" x2="130" y2="160"/></g><line x1="20" y1="165" x2="180" y2="165" class="ground"/></svg>`,
+        squat: `<svg viewBox="0 0 200 200" width="180"><g class="silhouette ani-squat"><circle cx="100" cy="50" r="12"/><line x1="100" y1="62" x2="100" y2="120"/><line x1="100" y1="120" x2="75" y2="155"/><line x1="75" y1="155" x2="100" y2="190"/></g><line x1="20" y1="195" x2="180" y2="195" class="ground"/></svg>`,
+        pull: `<svg viewBox="0 0 200 200" width="180"><line x1="40" y1="40" x2="160" y2="40" stroke="#444" stroke-width="8"/><g class="silhouette ani-pull"><circle cx="100" cy="80" r="12"/><line x1="100" y1="92" x2="100" y2="150"/><path d="M60,110 L100,92 L140,110"/></g></svg>`,
+        core: `<svg viewBox="0 0 200 200" width="180"><g class="silhouette ani-core"><line x1="40" y1="150" x2="150" y2="150"/><circle cx="165" cy="140" r="12"/></g><line x1="20" y1="160" x2="180" y2="160" class="ground"/></svg>`
+    };
+    let cur = 0;
+    function startWorkout() { cur = 0; document.getElementById('dash').classList.remove('active'); document.getElementById('player').classList.add('active'); renderEx(); }
+    function renderEx() {
+        const ex = DB[cur];
+        document.getElementById('ex-name').innerText = ex.n;
+        document.getElementById('ex-meta').innerText = ex.c;
+        document.getElementById('stage').innerHTML = GRAPHICS[ex.t];
+        const container = document.getElementById('sets-container');
+        container.innerHTML = '';
+        for(let i=1; i<=4; i++) container.innerHTML += `<div class="set-pill" onclick="this.classList.toggle('done')"><span>SERIE ${i}</span><span style="color:var(--accent)">12 REPS</span></div>`;
     }
-
-    function startWorkout() {
-        currentIdx = 0;
-        showScreen('player');
-        loadExercise();
-    }
-
-    function loadExercise() {
-        const item = currentWorkout[currentIdx];
-        const data = LIBRARY[item.id];
-        
-        document.getElementById('ex-name').innerText = data.n;
-        document.getElementById('ex-cat').innerText = data.c;
-        document.getElementById('anim-container').innerHTML = ANIMS[data.t];
-        
-        const list = document.getElementById('sets-list');
-        list.innerHTML = '';
-        for(let i=1; i<=item.sets; i++) {
-            list.innerHTML += `
-                <div class="set-row" onclick="this.classList.toggle('completed')">
-                    <span>SERIE ${i}</span>
-                    <span style="font-weight:900">${item.reps} REPS</span>
-                    <span>DONE</span>
-                </div>
-            `;
-        }
-    }
-
-    function nextExercise() {
-        if(currentIdx < currentWorkout.length - 1) {
-            currentIdx++;
-            loadExercise();
-        } else {
-            alert("Allenamento ELITE completato!");
-            showScreen('dash');
-        }
-    }
-
-    function startRest() {
-        let time = 90;
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            time--;
-            let m = Math.floor(time/60);
-            let s = time % 60;
-            document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0'+s : s}`;
-            if(time <= 0) {
-                clearInterval(timerInterval);
-                document.getElementById('timer-display').innerText = "VAI!";
-                if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
-            }
-        }, 1000);
-    }
-
-    // Init Dashboard
-    document.getElementById('plan-title').innerText = "FULL BODY ELITE A";
-    document.getElementById('plan-info').innerText = `${currentWorkout.length} Esercizi • 50 Minuti`;
-
+    function nextEx() { if(cur < DB.length-1) { cur++; renderEx(); } }
+    function prevEx() { if(cur > 0) { cur--; renderEx(); } }
 </script>
 </body>
 </html>
