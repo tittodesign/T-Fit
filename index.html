@@ -5,214 +5,158 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>T-FIT ELITE PRO</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter:wght@400;700&display=swap');
 
         :root {
             --accent: #FF6B00;
-            --bg: #000000;
+            --bg: #000;
             --surface: #121212;
-            --surface-light: #1e1e1e;
-            --text: #ffffff;
-            --text-dim: #a0a0a0;
-            --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --text: #fff;
+            --text-dim: #888;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            font-family: 'Inter', sans-serif; 
-            height: 100vh; 
-            overflow: hidden; 
-        }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
 
-        /* --- LAYOUT PRINCIPALE --- */
+        /* --- LAYOUT --- */
         #app { height: 100%; display: flex; flex-direction: column; }
-        .screen { display: none; flex: 1; flex-direction: column; overflow-y: auto; }
-        .screen.active { display: flex; }
+        .screen { display: none; flex: 1; flex-direction: column; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
+        .active { display: flex; }
 
-        /* --- HOME SCREEN --- */
-        .home-content { padding: 40px 20px; }
-        .hero-title { font-family: 'Barlow Condensed'; font-size: 50px; font-weight: 900; line-height: 0.9; margin-bottom: 10px; }
-        .hero-title span { color: var(--accent); }
-        .status-badge { display: inline-block; padding: 6px 12px; background: var(--surface); border-radius: 20px; font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 30px; }
-        
-        .plan-card { 
-            background: var(--surface); 
-            border-radius: 24px; 
-            padding: 25px; 
-            border: 1px solid rgba(255,255,255,0.05);
-            margin-bottom: 20px;
-        }
-        .plan-card h3 { font-family: 'Barlow Condensed'; font-size: 24px; margin-bottom: 5px; }
-        .plan-card p { color: var(--text-dim); font-size: 14px; margin-bottom: 20px; }
+        /* --- HEADER --- */
+        .header { padding: 20px 0; border-bottom: 1px solid #222; margin-bottom: 20px; }
+        .header h1 { font-family: 'Barlow Condensed'; font-size: 32px; font-weight: 900; text-transform: uppercase; }
+        .header span { color: var(--accent); }
 
-        /* --- PLAYER SCREEN --- */
-        .visual-container { 
-            width: 100%; 
-            height: 40vh; 
-            background: radial-gradient(circle at center, #1a1a1a, #000);
+        /* --- ANIMAZIONE INCORPORATA (NON SERVONO FILE) --- */
+        .anim-box {
+            width: 100%;
+            height: 200px;
+            background: #0a0a0a;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-bottom: 2px solid var(--accent);
-            position: relative;
+            border: 1px solid #222;
+            margin-bottom: 20px;
         }
-        .visual-container img { max-width: 80%; max-height: 80%; object-fit: contain; }
-        
-        .player-info { padding: 25px; flex: 1; display: flex; flex-direction: column; }
-        .ex-category { color: var(--accent); font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; }
-        .ex-title { font-family: 'Barlow Condensed'; font-size: 36px; font-weight: 900; margin: 5px 0 25px 0; }
+        .dot { width: 40px; height: 40px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; box-shadow: 0 0 20px var(--accent); }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
 
-        .sets-manager { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 30px; }
-        .set-item { 
-            background: var(--surface); 
-            padding: 15px; 
-            border-radius: 16px; 
-            border: 1px solid transparent; 
-            transition: 0.2s;
-        }
-        .set-item.active { border-color: var(--accent); background: rgba(255,107,0,0.05); }
-        .set-item span { display: block; font-size: 11px; color: var(--text-dim); text-transform: uppercase; }
-        .set-item strong { font-size: 18px; }
+        /* --- CALENDARIO STORICO --- */
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; background: var(--surface); padding: 15px; border-radius: 20px; }
+        .day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; background: #1a1a1a; }
+        .day.today { border: 2px solid var(--accent); color: var(--accent); font-weight: bold; }
+        .day.completed { background: var(--accent); color: #000; }
 
-        /* --- BUTTONS --- */
-        .btn { 
-            background: var(--accent); 
-            color: #000; 
-            border: none; 
-            padding: 20px; 
-            border-radius: 20px; 
-            font-weight: 800; 
-            font-size: 16px; 
-            text-transform: uppercase; 
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .btn:active { transform: scale(0.96); }
-        .btn-secondary { background: var(--surface-light); color: #fff; }
+        /* --- UI ELEMENTS --- */
+        .card { background: var(--surface); padding: 20px; border-radius: 20px; margin-bottom: 15px; }
+        .btn { background: var(--accent); color: #000; border: none; padding: 18px; border-radius: 15px; font-weight: 800; text-transform: uppercase; width: 100%; cursor: pointer; }
+        .btn-outline { background: #222; color: #fff; margin-top: 10px; }
 
         /* --- NAVIGATION --- */
-        nav { 
-            background: rgba(0,0,0,0.95); 
-            backdrop-filter: blur(10px);
-            padding: 15px 20px calc(15px + var(--safe-bottom)); 
-            display: flex; 
-            justify-content: space-around; 
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-        .nav-link { color: var(--text-dim); text-decoration: none; font-size: 10px; font-weight: 700; text-transform: uppercase; text-align: center; }
-        .nav-link.active { color: var(--accent); }
+        nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: space-around; padding: 15px 0 30px; border-top: 1px solid #222; }
+        .nav-item { color: var(--text-dim); text-decoration: none; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .nav-item.active { color: var(--accent); }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <section id="screen-home" class="screen active">
-        <div class="home-content">
-            <span class="status-badge">ELITE ACCESS ACTIVE</span>
-            <h1 class="hero-title">WORKOUT<br><span>TRACKER</span></h1>
-            
-            <div class="plan-card">
-                <h3>TOTAL BODY ELITE</h3>
-                <p>40 Esercizi • Alta Intensità • 60 min</p>
-                <button class="btn" style="width: 100%;" onclick="startWorkout()">Inizia Sessione</button>
-            </div>
+    <section id="dash" class="screen active">
+        <div class="header"><h1>T-FIT <span>ELITE</span></h1></div>
+        <div class="card">
+            <h3>Allenamento Odierno</h3>
+            <p style="color:var(--text-dim); font-size:14px; margin: 10px 0 20px;">Full Body - Sessione A</p>
+            <button class="btn" onclick="showScreen('player')">Inizia Ora</button>
         </div>
+        <div class="header"><h1>IL TUO <span>STORICO</span></h1></div>
+        <div class="calendar" id="calendar-grid"></div>
     </section>
 
-    <section id="screen-player" class="screen">
-        <div class="visual-container">
-            <img id="display-img" src="" alt="Esercizio">
-        </div>
+    <section id="player" class="screen">
+        <div class="anim-box">
+            <div class="dot"></div> </div>
+        <h2 id="ex-title" style="font-family:'Barlow Condensed'; font-size:32px;">PUSH UP</h2>
+        <p id="ex-cat" style="color:var(--accent); font-weight:700; margin-bottom:20px;">PETTO</p>
         
-        <div class="player-info">
-            <span class="ex-category" id="display-cat">CATEGORIA</span>
-            <h2 class="ex-title" id="display-title">NOME ESERCIZIO</h2>
-
-            <div class="sets-manager">
-                <div class="set-item active"><span>Serie 1</span><strong>12 Reps</strong></div>
-                <div class="set-item"><span>Serie 2</span><strong>12 Reps</strong></div>
-                <div class="set-item"><span>Serie 3</span><strong>10 Reps</strong></div>
-                <div class="set-item"><span>Serie 4</span><strong>8 Reps</strong></div>
+        <div class="card">
+            <div style="display:flex; justify-content:space-between;">
+                <span>Serie 1/4</span>
+                <strong>12 Reps</strong>
             </div>
+        </div>
 
-            <div style="display: flex; gap: 10px; margin-top: auto;">
-                <button class="btn btn-secondary" style="flex: 1;" onclick="changeExercise(-1)">Indietro</button>
-                <button class="btn" style="flex: 2;" onclick="changeExercise(1)">Prossimo</button>
-            </div>
+        <div style="margin-top:auto;">
+            <button class="btn" onclick="nextEx()">Prossimo Esercizio</button>
+            <button class="btn btn-outline" onclick="showScreen('dash')">Termina Sessione</button>
         </div>
     </section>
 
     <nav>
-        <a href="#" class="nav-link active" onclick="navTo('home', this)">Home</a>
-        <a href="#" class="nav-link" onclick="navTo('player', this)">Allenamento</a>
-        <a href="#" class="nav-link">Storico</a>
+        <a href="#" class="nav-item active" onclick="showScreen('dash')">Home</a>
+        <a href="#" class="nav-item" onclick="showScreen('player')">Workout</a>
+        <a href="#" class="nav-item">Profilo</a>
     </nav>
 </div>
 
 <script>
-    // DATABASE COMPLETO
-    const EXERCISES = [
-        { id: 'push_up', name: 'Push Up Elite', cat: 'Petto' },
-        { id: 'squat', name: 'Air Squat', cat: 'Gambe' },
-        { id: 'pull_up', name: 'Trazioni Sbarra', cat: 'Dorso' },
-        { id: 'military', name: 'Military Press', cat: 'Spalle' },
-        { id: 'dip', name: 'Dips Parallele', cat: 'Tricipiti' },
-        { id: 'curl', name: 'Bicep Curl', cat: 'Braccia' },
-        { id: 'plank', name: 'Plank Core', cat: 'Addominali' },
-        { id: 'lunges', name: 'Affondi', cat: 'Gambe' }
-        // Aggiungi qui gli altri 32 ID quando hai i file webp
+    const exercises = [
+        { n: "PUSH UP", c: "PETTO" },
+        { n: "SQUAT", c: "GAMBE" },
+        { n: "TRAZIONI", c: "DORSO" },
+        { n: "PLANK", c: "CORE" }
     ];
-
     let currentIdx = 0;
 
-    function navTo(screenId, el) {
+    // Funzione Cambio Schermata
+    function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
         
-        document.getElementById('screen-' + screenId).classList.add('active');
-        if(el) el.classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        if(id === 'dash') document.querySelectorAll('.nav-item')[0].classList.add('active');
+        if(id === 'player') document.querySelectorAll('.nav-item')[1].classList.add('active');
     }
 
-    function startWorkout() {
-        currentIdx = 0;
-        navTo('player', document.querySelectorAll('.nav-link')[1]);
-        updatePlayer();
-    }
-
-    function updatePlayer() {
-        const ex = EXERCISES[currentIdx];
-        document.getElementById('display-title').innerText = ex.name;
-        document.getElementById('display-cat').innerText = ex.cat;
-        
-        // Percorso immagine WebP
-        const imgPath = `./assets/${ex.id}.webp`;
-        const imgEl = document.getElementById('display-img');
-        
-        // Placeholder se l'immagine manca (per evitare lo spazio vuoto "penoso")
-        imgEl.onerror = () => {
-            imgEl.src = `https://via.placeholder.com/400x400/1a1a1a/FF6B00?text=${ex.name}`;
-        };
-        imgEl.src = imgPath;
-    }
-
-    function changeExercise(direction) {
-        currentIdx += direction;
-        if (currentIdx < 0) currentIdx = 0;
-        if (currentIdx >= EXERCISES.length) {
-            alert("Allenamento Terminato!");
-            navTo('home', document.querySelectorAll('.nav-link')[0]);
-            return;
+    // Funzione Allenamento
+    function nextEx() {
+        currentIdx++;
+        if(currentIdx >= exercises.length) {
+            alert("Allenamento Completato! Salvataggio nello storico...");
+            currentIdx = 0;
+            showScreen('dash');
+            markDateAsCompleted();
+        } else {
+            document.getElementById('ex-title').innerText = exercises[currentIdx].n;
+            document.getElementById('ex-cat').innerText = exercises[currentIdx].c;
         }
-        updatePlayer();
     }
 
-    // Fix per altezza mobile
-    window.addEventListener('resize', () => {
-        let vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
-    });
+    // Generazione Calendario Reale
+    function renderCalendar() {
+        const grid = document.getElementById('calendar-grid');
+        const now = new Date();
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        
+        grid.innerHTML = '';
+        for(let i = 1; i <= daysInMonth; i++) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day';
+            dayDiv.innerText = i;
+            if(i === now.getDate()) dayDiv.className += ' today';
+            grid.appendChild(dayDiv);
+        }
+    }
+
+    function markDateAsCompleted() {
+        const today = new Date().getDate();
+        const days = document.querySelectorAll('.day');
+        days[today - 1].classList.add('completed');
+    }
+
+    // Inizializzazione
+    renderCalendar();
 </script>
 </body>
 </html>
