@@ -1,250 +1,242 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>T-Fit Pro Coach</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <title>T-FIT Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;600&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { bg: '#121212', card: '#1E1E1E', accent: '#FF6B00', purple: '#8A2BE2' },
+                    fontFamily: { display: ['Barlow Condensed', 'sans-serif'], body: ['Barlow', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
     <style>
-        :root { --bg: #1a1a1a; --orange: #ff6600; --purple: #8a2be2; --gray: #2d2d2d; --text: #ffffff; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; overflow-x: hidden; }
-        
-        /* Layout */
-        header { padding: 20px; text-align: center; border-bottom: 2px solid var(--purple); background: #000; }
-        h1 { color: var(--orange); margin: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
-        .container { padding: 15px; max-width: 600px; margin: auto; }
-
-        /* Progress Bar */
-        #progress-wrap { position: fixed; top: 0; width: 100%; height: 4px; background: #000; z-index: 9999; }
-        #progress-fill { height: 100%; width: 0%; background: var(--purple); transition: 0.3s; box-shadow: 0 0 10px var(--purple); }
-
-        /* Calendario */
-        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; background: var(--gray); padding: 10px; border-radius: 10px; }
-        .day { padding: 10px 0; text-align: center; border-radius: 5px; cursor: pointer; font-size: 0.9rem; position: relative; }
-        .day.today { border: 1px solid var(--orange); }
-        .day.selected { background: var(--purple) !important; }
-        .day.has-event::after { content: ''; width: 4px; height: 4px; background: var(--orange); border-radius: 50%; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); }
-
-        /* Esercizi */
-        .card { background: var(--gray); border-radius: 12px; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--orange); position: relative; transition: 0.2s; }
-        .card.done { opacity: 0.4; border-left-color: var(--purple); }
-        .card h3 { margin: 0 0 5px 0; font-size: 1.1rem; }
-        .card p { margin: 0; font-size: 0.85rem; color: #bbb; }
-        .controls { display: flex; gap: 10px; margin-top: 10px; }
-        
-        /* Bottoni */
-        button { border: none; border-radius: 6px; padding: 10px 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-orange { background: var(--orange); color: #fff; }
-        .btn-purple { background: var(--purple); color: #fff; }
-        .btn-outline { background: transparent; border: 1px solid #555; color: #fff; width: 100%; margin-top: 10px; }
-        
-        /* Pannello Creazione */
-        #editor-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 5000; display: none; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        select, input { width: 100%; padding: 12px; margin: 10px 0; background: #333; border: 1px solid #444; color: #fff; border-radius: 8px; }
-
-        /* Timer Overlay */
-        #timer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9000; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        #timer-num { font-size: 8rem; color: var(--purple); font-weight: bold; }
-        
-        /* Animazioni */
-        .gif-container { width: 100%; display: none; margin-top: 10px; border-radius: 8px; overflow: hidden; background: #000; }
-        .gif-container img { width: 100%; display: block; }
+        body { background: #121212; color: #E0E0E0; font-family: 'Barlow', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .page { display: none; animation: fadeIn 0.3s ease-out; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .cal-day.trained { background: #FF6B00; color: white; border-radius: 50%; }
+        .timer-ring { transform: rotate(-90deg); transition: stroke-dashoffset 1s linear; }
+        .exercise-card.done { opacity: 0.3; filter: grayscale(1); }
     </style>
 </head>
-<body>
+<body class="pb-24">
 
-<div id="progress-wrap"><div id="progress-fill"></div></div>
-
-<header><h1>T-FIT COACH</h1></header>
-
-<div class="container">
-    <div class="cal-header">
-        <h2 id="currentMonth">Mese</h2>
-        <button class="btn-purple" onclick="openEditor()">+ NUOVA SCHEDA</button>
+<header class="sticky top-0 z-50 bg-bg/95 backdrop-blur-md border-b border-white/5 px-4 py-4">
+    <div class="max-w-md mx-auto flex justify-between items-center">
+        <h1 class="font-display font-800 text-2xl tracking-tighter text-white">T-<span class="text-accent">FIT</span></h1>
+        <div id="header-date" class="text-xs font-medium text-gray-500 uppercase tracking-widest"></div>
     </div>
-    <div id="calendar" class="calendar-grid"></div>
+</header>
 
-    <div id="daily-workout" style="margin-top: 25px;">
-        <h3 id="selected-date-label">Seleziona un giorno</h3>
-        <div id="exercise-list"></div>
+<main class="max-w-md mx-auto px-4 pt-6">
+    
+    <section id="page-library" class="page active">
+        <h2 class="font-display font-bold text-3xl mb-1">Esercizi</h2>
+        <p class="text-gray-500 text-sm mb-6">Corpo libero: tocca "+" per aggiungere</p>
+        <div id="library-list" class="space-y-4"></div>
+    </section>
+
+    <section id="page-workout" class="page">
+        <div class="flex justify-between items-end mb-6">
+            <div>
+                <h2 class="font-display font-bold text-3xl">Scheda Oggi</h2>
+                <p class="text-accent text-sm font-bold uppercase tracking-tighter" id="workout-status">In attesa...</p>
+            </div>
+            <button onclick="completeWorkout()" class="bg-accent text-white font-display font-bold px-6 py-2 rounded-xl text-sm uppercase">Chiudi ✓</button>
+        </div>
+        <div id="workout-list" class="space-y-4"></div>
+    </section>
+
+    <section id="page-calendar" class="page">
+        <h2 class="font-display font-bold text-3xl mb-6">Storico</h2>
+        <div class="bg-card rounded-3xl p-6 shadow-2xl">
+            <div id="cal-month" class="text-center font-display font-bold text-xl mb-4 uppercase text-accent"></div>
+            <div class="grid grid-cols-7 gap-2 text-center text-xs text-gray-600 mb-2 font-bold">
+                <div>L</div><div>M</div><div>M</div><div>G</div><div>V</div><div>S</div><div>D</div>
+            </div>
+            <div id="cal-grid" class="grid grid-cols-7 gap-2"></div>
+        </div>
+    </section>
+</main>
+
+<div id="timer-overlay" class="fixed inset-0 bg-bg/fb backdrop-blur-xl z-[100] hidden flex-col items-center justify-center">
+    <p id="timer-label" class="font-display text-accent text-2xl mb-8 uppercase tracking-widest">Recupero</p>
+    <div class="relative flex items-center justify-center">
+        <svg width="240" height="240">
+            <circle cx="120" cy="120" r="110" stroke="#222" stroke-width="8" fill="none"/>
+            <circle id="timer-bar" cx="120" cy="120" r="110" stroke="#FF6B00" stroke-width="8" fill="none" class="timer-ring" stroke-dasharray="691" stroke-dashoffset="0"/>
+        </svg>
+        <span id="timer-time" class="absolute font-display font-bold text-6xl text-white">30</span>
+    </div>
+    <div class="mt-12 flex gap-4">
+        <button onclick="adjustTimer(10)" class="bg-white/10 text-white px-8 py-4 rounded-2xl font-bold border border-white/10">+10s</button>
+        <button onclick="closeTimer()" class="bg-accent text-white px-8 py-4 rounded-2xl font-bold">SALTA</button>
     </div>
 </div>
 
-<div id="editor-overlay">
-    <h2>Crea Allenamento</h2>
-    <div id="editor-items"></div>
-    <button class="btn-orange" onclick="addExerciseField()">+ AGGIUNGI ESERCIZIO</button>
-    <div style="margin-top: 30px; display: flex; gap: 10px;">
-        <button class="btn-purple" style="flex:1" onclick="saveWorkout()">SALVA SCHEDA</button>
-        <button class="btn-outline" style="flex:1" onclick="closeEditor()">ANNULLA</button>
+<nav class="fixed bottom-0 left-0 right-0 bg-bg/90 border-t border-white/5 backdrop-blur-lg px-6 py-4 z-50">
+    <div class="max-w-md mx-auto flex justify-between">
+        <button onclick="switchPage('library')" class="flex flex-col items-center text-gray-500" id="nav-library">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            <span class="text-[10px] uppercase font-bold mt-1">Libreria</span>
+        </button>
+        <button onclick="switchPage('workout')" class="flex flex-col items-center text-gray-500" id="nav-workout">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12h12M12 6v12"/></svg>
+            <span class="text-[10px] uppercase font-bold mt-1">Allenamento</span>
+        </button>
+        <button onclick="switchPage('calendar')" class="flex flex-col items-center text-gray-500" id="nav-calendar">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span class="text-[10px] uppercase font-bold mt-1">Calendario</span>
+        </button>
     </div>
-</div>
-
-<div id="timer-overlay">
-    <h2 id="timer-task" style="color: var(--orange)">RECUPERO</h2>
-    <div id="timer-num">30</div>
-    <button class="btn-orange" onclick="adjustTimer(10)" style="font-size: 1.2rem;">+ 10 SEC</button>
-</div>
+</nav>
 
 <script>
-// LIBRERIA COMPLETA ESERCIZI
-const library = [
-    { n: "Push-ups", d: "Piegamenti braccia standard.", g: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF6M2Z6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6JmRjPTEmZ3c9MTI4MA/3o7TKu6WJxtZvbqKv6/giphy.gif" },
-    { n: "Diamond Push-ups", d: "Mani a diamante per tricipiti.", g: "https://media.giphy.com/media/26u4b4pX7pGqM6k7u/giphy.gif" },
-    { n: "Squat", d: "Gambe larghezza spalle, scendi col bacino.", g: "https://media.giphy.com/media/26u49w47AfX7hZ0n6/giphy.gif" },
-    { n: "Plank", d: "Tenuta addominale sugli avambracci.", g: "https://media.giphy.com/media/3o7TKu6WJxtZvbqKv6/giphy.gif" },
-    { n: "Affondi", d: "Passo avanti e scendi col ginocchio.", g: "https://media.giphy.com/media/l41lS2fO7H2nRXOxi/giphy.gif" },
-    { n: "Burpees", d: "Piegamento, salto e battito mani.", g: "https://media.giphy.com/media/26u4b4pX7pGqM6k7u/giphy.gif" },
-    { n: "Mountain Climbers", d: "Ginocchia al petto velocemente.", g: "https://media.giphy.com/media/3o7TKu6WJxtZvbqKv6/giphy.gif" }
+const DB = [
+    {id:'p1', name:'Push-ups', cat:'petto', gif:'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF6M2Z6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6JmRjPTEmZ3c9MTI4MA/3o7TKu6WJxtZvbqKv6/giphy.gif'},
+    {id:'s1', name:'Squats', cat:'gambe', gif:'https://media.giphy.com/media/26u49w47AfX7hZ0n6/giphy.gif'},
+    {id:'pl1', name:'Plank', cat:'core', time: true, gif:'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF6M2Z6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6JmRjPTEmZ3c9MTI4MA/3o7TKu6WJxtZvbqKv6/giphy.gif'},
+    {id:'b1', name:'Burpees', cat:'cardio', gif:'https://media.giphy.com/media/26u4b4pX7pGqM6k7u/giphy.gif'},
+    {id:'a1', name:'Affondi', cat:'gambe', gif:'https://media.giphy.com/media/l41lS2fO7H2nRXOxi/giphy.gif'}
 ];
 
-let selectedDate = new Date().toDateString();
-let workouts = JSON.parse(localStorage.getItem('tfit_workouts')) || {};
-let timerInterval;
-let timeLeft = 0;
+let workout = JSON.parse(localStorage.getItem('tfit_workout')) || [];
+let trained = JSON.parse(localStorage.getItem('tfit_trained')) || [];
+let tRemaining = 0;
+let tInterval;
 
-// INIZIALIZZAZIONE
-function init() {
-    renderCalendar();
-    renderWorkout();
-    if ('wakeLock' in navigator) navigator.wakeLock.request('screen');
+function switchPage(p) {
+    document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+    document.getElementById('page-'+p).classList.add('active');
+    if(p === 'workout') renderWorkout();
+    if(p === 'calendar') renderCalendar();
 }
 
-function renderCalendar() {
-    const cal = document.getElementById('calendar');
-    const now = new Date();
-    document.getElementById('currentMonth').innerText = now.toLocaleString('it-IT', { month: 'long', year: 'numeric' });
-    cal.innerHTML = '';
-    
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    for (let i = 1; i <= daysInMonth; i++) {
-        const d = new Date(now.getFullYear(), now.getMonth(), i).toDateString();
-        const div = document.createElement('div');
-        div.className = `day ${d === selectedDate ? 'selected' : ''} ${workouts[d] ? 'has-event' : ''}`;
-        div.innerText = i;
-        div.onclick = () => { selectedDate = d; renderCalendar(); renderWorkout(); };
-        cal.appendChild(div);
-    }
+function renderLibrary() {
+    const container = document.getElementById('library-list');
+    container.innerHTML = DB.map(ex => `
+        <div class="bg-card p-4 rounded-2xl flex items-center justify-between border border-white/5">
+            <div>
+                <h3 class="font-bold text-white">${ex.name}</h3>
+                <span class="text-[10px] text-accent font-bold uppercase tracking-widest">${ex.cat}</span>
+            </div>
+            <button onclick="addToWorkout('${ex.id}')" class="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-accent">+</button>
+        </div>
+    `).join('');
+}
+
+function addToWorkout(id) {
+    const ex = DB.find(e => e.id === id);
+    workout.push({...ex, done: false, sets: 3, val: ex.time ? 45 : 12});
+    localStorage.setItem('tfit_workout', JSON.stringify(workout));
+    alert(ex.name + ' aggiunto!');
 }
 
 function renderWorkout() {
-    const list = document.getElementById('exercise-list');
-    const label = document.getElementById('selected-date-label');
-    label.innerText = new Date(selectedDate).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' });
-    list.innerHTML = '';
-    
-    const data = workouts[selectedDate];
-    if (!data) { list.innerHTML = '<p>Nessun allenamento. Clicca "+" per creare.</p>'; updateProgress(0); return; }
-
-    data.forEach((ex, idx) => {
-        const card = document.createElement('div');
-        card.className = `card ${ex.done ? 'done' : ''}`;
-        card.innerHTML = `
-            <h3>${idx + 1}. ${ex.name}</h3>
-            <p>${ex.val}</p>
-            <div id="gif-${idx}" class="gif-container"><img src="${ex.gif}"></div>
-            <div class="controls">
-                <button class="btn-purple" onclick="toggleGif(${idx})">INFO</button>
-                <button class="btn-orange" onclick="doAction(${idx})">${ex.isTime ? 'AVVIA' : 'FATTO'}</button>
+    const container = document.getElementById('workout-list');
+    if(workout.length === 0) { container.innerHTML = '<p class="text-center text-gray-600 py-10">Scheda vuota</p>'; return; }
+    container.innerHTML = workout.map((ex, i) => `
+        <div class="bg-card rounded-3xl overflow-hidden border border-white/5 ${ex.done ? 'done' : ''}">
+            <img src="${ex.gif}" class="w-full h-40 object-cover opacity-50">
+            <div class="p-5">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="font-display font-bold text-xl uppercase">${ex.name}</h3>
+                    <button onclick="removeEx(${i})" class="text-gray-600 text-xs uppercase font-bold">Rimuovi</button>
+                </div>
+                <div class="flex gap-3">
+                    <input type="number" value="${ex.val}" onchange="updateEx(${i}, 'val', this.value)" class="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-center font-bold">
+                    <button onclick="completeEx(${i})" class="flex-[2] bg-accent text-white font-bold rounded-xl uppercase tracking-widest">
+                        ${ex.time ? 'Avvia' : 'Fatto'}
+                    </button>
+                </div>
             </div>
-        `;
-        list.appendChild(card);
-    });
-    updateProgress();
+        </div>
+    `).join('');
 }
 
-function openEditor() { document.getElementById('editor-overlay').style.display = 'block'; }
-function closeEditor() { document.getElementById('editor-overlay').style.display = 'none'; }
-
-function addExerciseField() {
-    const container = document.getElementById('editor-items');
-    const div = document.createElement('div');
-    div.style.background = "#222"; div.style.padding = "10px"; div.style.marginBottom = "10px"; div.style.borderRadius = "8px";
-    div.innerHTML = `
-        <select class="ex-select">${library.map(e => `<option value="${e.n}">${e.n}</option>`).join('')}</select>
-        <input type="text" class="ex-val" placeholder="es: 3 serie x 12 reps o 45 sec">
-        <label style="font-size:0.8rem"><input type="checkbox" class="ex-istime"> È un esercizio a tempo?</label>
-    `;
-    container.appendChild(div);
+function completeEx(i) {
+    const ex = workout[i];
+    if(ex.time) {
+        startTimer(ex.val, ex.name, () => { finishEx(i); });
+    } else {
+        finishEx(i);
+        startTimer(30, 'Recupero');
+    }
 }
 
-function saveWorkout() {
-    const items = document.querySelectorAll('#editor-items > div');
-    let temp = [];
-    items.forEach(it => {
-        const name = it.querySelector('.ex-select').value;
-        const libItem = library.find(l => l.n === name);
-        temp.push({
-            name: name,
-            val: it.querySelector('.ex-val').value,
-            isTime: it.querySelector('.ex-istime').checked,
-            gif: libItem.g,
-            done: false
-        });
-    });
-    workouts[selectedDate] = temp;
-    localStorage.setItem('tfit_workouts', JSON.stringify(workouts));
-    closeEditor(); renderCalendar(); renderWorkout();
-}
-
-function doAction(idx) {
-    const ex = workouts[selectedDate][idx];
-    if (ex.isTime && !ex.done) {
-        const sec = parseInt(ex.val) || 30;
-        runTimer(sec, ex.name, () => { finishEx(idx); });
-    } else { finishEx(idx); }
-}
-
-function finishEx(idx) {
-    workouts[selectedDate][idx].done = true;
-    localStorage.setItem('tfit_workouts', JSON.stringify(workouts));
+function finishEx(i) {
+    workout[i].done = true;
+    localStorage.setItem('tfit_workout', JSON.stringify(workout));
     renderWorkout();
-    setTimeout(() => runTimer(30, "RECUPERO"), 300);
 }
 
-function runTimer(sec, label, cb) {
-    const ov = document.getElementById('timer-overlay');
-    const display = document.getElementById('timer-num');
-    document.getElementById('timer-task').innerText = label;
-    ov.style.display = 'flex';
-    timeLeft = sec;
-    display.innerText = timeLeft;
+function removeEx(i) {
+    workout.splice(i, 1);
+    localStorage.setItem('tfit_workout', JSON.stringify(workout));
+    renderWorkout();
+}
+
+function startTimer(sec, label, cb) {
+    tRemaining = parseInt(sec);
+    document.getElementById('timer-overlay').style.display = 'flex';
+    document.getElementById('timer-label').innerText = label;
+    updateTimerUI();
     
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        display.innerText = timeLeft;
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            ov.style.display = 'none';
-            beep();
+    clearInterval(tInterval);
+    tInterval = setInterval(() => {
+        tRemaining--;
+        updateTimerUI();
+        if(tRemaining <= 0) {
+            clearInterval(tInterval);
+            document.getElementById('timer-overlay').style.display = 'none';
+            new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();
             if(cb) cb();
         }
     }, 1000);
 }
 
-function adjustTimer(v) { timeLeft += v; document.getElementById('timer-num').innerText = timeLeft; }
-
-function toggleGif(idx) {
-    const g = document.getElementById(`gif-${idx}`);
-    g.style.display = g.style.display === 'block' ? 'none' : 'block';
+function updateTimerUI() {
+    document.getElementById('timer-time').innerText = tRemaining;
+    const offset = 691 * (1 - tRemaining / (tRemaining + 1)); // Semplificato
+    document.getElementById('timer-bar').style.strokeDashoffset = offset;
 }
 
-function updateProgress() {
-    const data = workouts[selectedDate] || [];
-    const done = data.filter(e => e.done).length;
-    const perc = data.length ? (done / data.length) * 100 : 0;
-    document.getElementById('progress-fill').style.width = perc + '%';
+function adjustTimer(v) { tRemaining += v; updateTimerUI(); }
+function closeTimer() { clearInterval(tInterval); document.getElementById('timer-overlay').style.display = 'none'; }
+
+function renderCalendar() {
+    const grid = document.getElementById('cal-grid');
+    const now = new Date();
+    document.getElementById('cal-month').innerText = now.toLocaleString('it-it', {month:'long'});
+    grid.innerHTML = '';
+    for(let i=1; i<=30; i++) {
+        const isTrained = trained.includes(`${now.getFullYear()}-${now.getMonth()}-${i}`);
+        grid.innerHTML += `<div class="cal-day p-2 text-sm font-bold ${isTrained ? 'trained' : 'text-gray-500'}">${i}</div>`;
+    }
 }
 
-function beep() {
-    const a = new (window.AudioContext || window.webkitAudioContext)();
-    const o = a.createOscillator(); o.connect(a.destination);
-    o.start(); o.stop(a.currentTime + 0.4);
-    if (navigator.vibrate) navigator.vibrate(500);
+function completeWorkout() {
+    const now = new Date();
+    const key = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+    if(!trained.includes(key)) trained.push(key);
+    localStorage.setItem('tfit_trained', JSON.stringify(trained));
+    workout = [];
+    localStorage.setItem('tfit_workout', JSON.stringify(workout));
+    alert('Allenamento completato!');
+    switchPage('calendar');
 }
 
-init();
+// INIT
+document.getElementById('header-date').innerText = new Date().toLocaleDateString('it-it', {weekday:'short', day:'numeric', month:'short'});
+renderLibrary();
 </script>
 </body>
 </html>
