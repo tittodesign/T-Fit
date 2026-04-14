@@ -1,246 +1,727 @@
 <!DOCTYPE html>
+
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>T-FIT PRO</title>
-
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#121212"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>T-Fit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700&display=swap" rel="stylesheet">
-
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        bg: '#121212',
+        card: '#1E1E1E',
+        cardhi: '#272727',
+        text: '#E0E0E0',
+        muted: '#888888',
+        accent: '#FF6B00',
+        accentd: '#CC5500',
+      },
+      fontFamily: {
+        display: ['Barlow Condensed', 'sans-serif'],
+        body: ['Barlow', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
 <style>
-body { font-family: 'Barlow Condensed', sans-serif; }
-.timer-ring { transform: rotate(-90deg); }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{background:#121212;color:#E0E0E0;font-family:'Barlow',sans-serif;overflow-x:hidden;}
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:#1E1E1E;}
+  ::-webkit-scrollbar-thumb{background:#FF6B00;border-radius:2px;}
+
+/* Nav */
+.nav-item{transition:all .2s;position:relative;}
+.nav-item.active{color:#FF6B00;}
+.nav-item.active::after{content:’’;position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:#FF6B00;border-radius:50%;}
+
+/* Timer ring */
+.timer-ring{transform:rotate(-90deg);}
+.timer-ring circle{stroke-dasharray:283;stroke-dashoffset:0;transition:stroke-dashoffset .5s linear;stroke-linecap:round;}
+
+/* Page transitions */
+.page{display:none;animation:fadeIn .25s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* Calendar */
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:.75rem;cursor:pointer;transition:all .2s;}
+.cal-day.today{border:1.5px solid #FF6B00;color:#FF6B00;font-weight:700;}
+.cal-day.trained{background:#FF6B00;color:#fff;font-weight:700;}
+.cal-day.other-month{color:#444;}
+.cal-day:hover:not(.trained){background:#272727;}
+
+/* Exercise gif placeholder */
+.gif-placeholder{background:linear-gradient(135deg,#272727,#1a1a1a);position:relative;overflow:hidden;}
+.gif-placeholder::after{content:’’;position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,107,0,.05),transparent);animation:shimmer 2s infinite;}
+@keyframes shimmer{from{transform:translateX(-100%);}to{transform:translateX(100%);}}
+
+/* Checkbox custom */
+.set-check{appearance:none;width:22px;height:22px;border:2px solid #444;border-radius:6px;cursor:pointer;transition:all .2s;flex-shrink:0;}
+.set-check:checked{background:#FF6B00;border-color:#FF6B00;background-image:url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 16 16’ fill=‘none’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cpath d=‘M3 8L6.5 11.5L13 5’ stroke=‘white’ stroke-width=‘2’ stroke-linecap=‘round’ stroke-linejoin=‘round’/%3E%3C/svg%3E”);background-size:contain;}
+
+/* Input */
+.fit-input{background:#2a2a2a;border:1px solid #333;color:#E0E0E0;border-radius:8px;padding:6px 10px;width:100%;font-family:‘Barlow’,sans-serif;font-size:.875rem;transition:border-color .2s;}
+.fit-input:focus{outline:none;border-color:#FF6B00;}
+
+/* Buttons */
+.btn-accent{background:#FF6B00;color:#fff;font-family:‘Barlow Condensed’,sans-serif;font-weight:700;letter-spacing:.05em;border-radius:10px;transition:all .15s;border:none;cursor:pointer;}
+.btn-accent:hover{background:#CC5500;transform:translateY(-1px);}
+.btn-accent:active{transform:translateY(0);}
+.btn-ghost{background:transparent;border:1px solid #333;color:#E0E0E0;font-family:‘Barlow Condensed’,sans-serif;font-weight:600;border-radius:10px;transition:all .15s;cursor:pointer;}
+.btn-ghost:hover{border-color:#FF6B00;color:#FF6B00;}
+
+/* Timer overlay */
+#timer-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(18,18,18,.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;flex-direction:column;}
+#timer-overlay.show{display:flex;animation:fadeIn .2s ease;}
+
+/* Toast */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#FF6B00;color:#fff;padding:10px 20px;border-radius:20px;font-family:‘Barlow Condensed’,sans-serif;font-weight:700;font-size:.95rem;letter-spacing:.05em;opacity:0;transition:all .3s;z-index:200;pointer-events:none;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Card hover */
+.exercise-card:hover{background:#242424;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.exercise-card{transition:all .2s;}
 </style>
+
 </head>
+<body class="min-h-screen pb-20">
 
-<body class="bg-black text-white p-4">
+<!-- ===== HEADER ===== -->
 
-<h1 class="text-3xl text-orange-500 font-bold">T-FIT PRO</h1>
+<header class="sticky top-0 z-50 bg-bg border-b border-[#2a2a2a]" style="backdrop-filter:blur(12px);background:rgba(18,18,18,.95);">
+  <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M4 12h16M2 8.5h3M19 8.5h3M2 15.5h3M19 15.5h3"/></svg>
+      </div>
+      <span class="font-display font-800 text-xl tracking-wide text-text">T-<span class="text-accent">FIT</span></span>
+    </div>
+    <div class="text-muted text-sm font-body" id="header-date"></div>
+  </div>
+</header>
 
-<!-- PESO -->
-<div class="bg-gray-900 p-3 rounded mt-3">
-<input id="weightInput" type="number" placeholder="Peso (kg)" class="w-full p-2 bg-black rounded">
-<button onclick="saveWeight()" class="bg-purple-600 w-full mt-2 p-2 rounded">Salva</button>
-<canvas id="weightChart" height="100"></canvas>
+<!-- ===== PAGES ===== -->
+
+<main class="max-w-lg mx-auto px-4 pt-4">
+
+  <!-- PAGE: LIBRERIA -->
+
+  <div class="page active" id="page-library">
+    <div class="mb-4">
+      <h1 class="font-display font-bold text-2xl text-text">Libreria Esercizi</h1>
+      <p class="text-muted text-sm">Aggiungi esercizi alla scheda di oggi</p>
+    </div>
+
+```
+<!-- Search -->
+<div class="relative mb-4">
+  <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <input id="lib-search" type="text" placeholder="Cerca esercizio..." class="fit-input pl-9"/>
 </div>
 
-<!-- CALENDARIO -->
-<div id="calendar" class="grid grid-cols-7 gap-2 mt-4"></div>
-
-<!-- WORKOUT -->
-<h2 class="text-xl text-purple-400 mt-4">Workout</h2>
-<div id="workoutList"></div>
-
-<!-- LIBRERIA -->
-<select id="exerciseSelect" class="w-full p-2 bg-gray-800 rounded mt-3"></select>
-<button onclick="addExercise()" class="bg-orange-500 w-full mt-2 p-2 rounded">Aggiungi</button>
-
-<!-- TIMER -->
-<div id="timerOverlay" class="fixed inset-0 bg-black flex flex-col items-center justify-center hidden">
-<svg width="200" height="200" class="timer-ring">
-<circle cx="100" cy="100" r="90" stroke="gray" stroke-width="10" fill="none"/>
-<circle id="progress" cx="100" cy="100" r="90" stroke="#FF6B00" stroke-width="10" fill="none"
-stroke-dasharray="565" stroke-dashoffset="0"/>
-</svg>
-<div id="timeText" class="text-5xl mt-4">30</div>
-<button onclick="addTime()" class="bg-purple-600 mt-4 p-3 rounded">+10s</button>
+<!-- Filter tabs -->
+<div class="flex gap-2 mb-4 overflow-x-auto pb-1" id="lib-filters">
+  <button class="filter-btn btn-accent px-4 py-1.5 text-sm whitespace-nowrap" data-cat="tutti">Tutti</button>
+  <button class="filter-btn btn-ghost px-4 py-1.5 text-sm whitespace-nowrap" data-cat="petto">Petto</button>
+  <button class="filter-btn btn-ghost px-4 py-1.5 text-sm whitespace-nowrap" data-cat="gambe">Gambe</button>
+  <button class="filter-btn btn-ghost px-4 py-1.5 text-sm whitespace-nowrap" data-cat="schiena">Schiena</button>
+  <button class="filter-btn btn-ghost px-4 py-1.5 text-sm whitespace-nowrap" data-cat="spalle">Spalle</button>
+  <button class="filter-btn btn-ghost px-4 py-1.5 text-sm whitespace-nowrap" data-cat="braccia">Braccia</button>
+  <button class="filter-btn btn-ghost px-4 py-1.5 text-sm whitespace-nowrap" data-cat="core">Core</button>
 </div>
+
+<div id="library-list" class="flex flex-col gap-3"></div>
+```
+
+  </div>
+
+  <!-- PAGE: WORKOUT -->
+
+  <div class="page" id="page-workout">
+    <div class="mb-4 flex items-center justify-between">
+      <div>
+        <h1 class="font-display font-bold text-2xl text-text">Allenamento</h1>
+        <p class="text-muted text-sm" id="workout-date-label"></p>
+      </div>
+      <button onclick="finishWorkout()" class="btn-accent px-4 py-2 text-sm uppercase tracking-wider">Fine ✓</button>
+    </div>
+
+```
+<div id="workout-empty" class="text-center py-16 text-muted">
+  <svg class="mx-auto mb-3 opacity-30" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 6.5h11M6.5 17.5h11M4 12h16M2 8.5h3M19 8.5h3M2 15.5h3M19 15.5h3"/></svg>
+  <p class="font-body">Nessun esercizio aggiunto.<br><span class="text-accent cursor-pointer" onclick="switchPage('library')">Vai alla Libreria →</span></p>
+</div>
+
+<div id="workout-list" class="flex flex-col gap-4"></div>
+```
+
+  </div>
+
+  <!-- PAGE: CALENDARIO -->
+
+  <div class="page" id="page-calendar">
+    <div class="mb-4">
+      <h1 class="font-display font-bold text-2xl text-text">Calendario</h1>
+      <p class="text-muted text-sm">Storico allenamenti</p>
+    </div>
+
+```
+<!-- Month nav -->
+<div class="flex items-center justify-between mb-4 bg-card rounded-xl px-4 py-3">
+  <button onclick="calPrev()" class="btn-ghost px-3 py-1.5 text-base">←</button>
+  <span id="cal-title" class="font-display font-bold text-lg text-text uppercase tracking-wide"></span>
+  <button onclick="calNext()" class="btn-ghost px-3 py-1.5 text-base">→</button>
+</div>
+
+<!-- Days of week -->
+<div class="grid grid-cols-7 mb-1">
+  <div class="text-center text-xs text-muted font-body py-1">L</div>
+  <div class="text-center text-xs text-muted font-body py-1">M</div>
+  <div class="text-center text-xs text-muted font-body py-1">M</div>
+  <div class="text-center text-xs text-muted font-body py-1">G</div>
+  <div class="text-center text-xs text-muted font-body py-1">V</div>
+  <div class="text-center text-xs text-muted font-body py-1">S</div>
+  <div class="text-center text-xs text-muted font-body py-1">D</div>
+</div>
+<div id="cal-grid" class="grid grid-cols-7 gap-1 mb-6"></div>
+
+<!-- Monthly stats -->
+<div class="bg-card rounded-xl p-4 mb-4">
+  <h3 class="font-display font-bold text-base uppercase tracking-wide text-muted mb-3">Questo Mese</h3>
+  <div class="grid grid-cols-3 gap-3 text-center">
+    <div><div class="text-2xl font-display font-bold text-accent" id="stat-sessions">0</div><div class="text-xs text-muted">Sessioni</div></div>
+    <div><div class="text-2xl font-display font-bold text-accent" id="stat-streak">0</div><div class="text-xs text-muted">Streak</div></div>
+    <div><div class="text-2xl font-display font-bold text-accent" id="stat-total">0</div><div class="text-xs text-muted">Totale</div></div>
+  </div>
+</div>
+
+<!-- Detail panel -->
+<div id="cal-detail" class="bg-card rounded-xl p-4 hidden">
+  <h3 class="font-display font-bold text-base uppercase tracking-wide text-text mb-2" id="cal-detail-title"></h3>
+  <div id="cal-detail-content" class="text-sm text-muted"></div>
+</div>
+```
+
+  </div>
+
+</main>
+
+<!-- ===== BOTTOM NAV ===== -->
+
+<nav class="fixed bottom-0 left-0 right-0 bg-bg border-t border-[#2a2a2a] z-50" style="backdrop-filter:blur(12px);background:rgba(18,18,18,.97);">
+  <div class="max-w-lg mx-auto flex justify-around py-3 px-4">
+    <button class="nav-item active flex flex-col items-center gap-1 px-3" onclick="switchPage('library')" id="nav-library">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="text-xs font-display font-600 tracking-wide">Libreria</span>
+    </button>
+    <button class="nav-item flex flex-col items-center gap-1 px-3" onclick="switchPage('workout')" id="nav-workout">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 6.5h11M6.5 17.5h11M4 12h16M2 8.5h3M19 8.5h3M2 15.5h3M19 15.5h3"/></svg>
+      <span class="text-xs font-display font-600 tracking-wide">Workout</span>
+    </button>
+    <button class="nav-item flex flex-col items-center gap-1 px-3" onclick="switchPage('calendar')" id="nav-calendar">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <span class="text-xs font-display font-600 tracking-wide">Calendario</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ===== TIMER OVERLAY ===== -->
+
+<div id="timer-overlay">
+  <div class="text-center">
+    <p class="font-display text-muted uppercase tracking-widest text-sm mb-6">Recupero</p>
+    <div class="relative inline-flex items-center justify-center">
+      <svg width="180" height="180" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="#2a2a2a" stroke-width="4"/>
+        <circle id="timer-ring-circle" class="timer-ring" cx="50" cy="50" r="45" fill="none" stroke="#FF6B00" stroke-width="4" style="stroke-dasharray:283;stroke-dashoffset:0;"/>
+      </svg>
+      <div class="absolute text-center">
+        <div id="timer-display" class="font-display font-bold text-5xl text-text">1:30</div>
+        <div class="text-xs text-muted font-body mt-1">secondi</div>
+      </div>
+    </div>
+    <div class="mt-6 flex gap-3 justify-center">
+      <button onclick="skipTimer()" class="btn-ghost px-6 py-2.5 text-sm uppercase tracking-wider">Salta</button>
+      <button onclick="resetTimer()" class="btn-ghost px-6 py-2.5 text-sm uppercase tracking-wider">Reset</button>
+    </div>
+    <p class="text-muted text-xs mt-4 font-body">Il timer si chiuderà automaticamente</p>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+
+<div id="toast"></div>
 
 <script>
+// ============================================================
+// DATA & CONSTANTS
+// ============================================================
+const EXERCISES_DB = [
+  {id:'e1', name:'Panca Piana', cat:'petto', muscles:'Petto, Tricipiti, Deltoidi', icon:'🏋️'},
+  {id:'e2', name:'Panca Inclinata', cat:'petto', muscles:'Petto Alto, Deltoidi', icon:'🏋️'},
+  {id:'e3', name:'Croci Manubri', cat:'petto', muscles:'Petto, Coracobrachiale', icon:'💪'},
+  {id:'e4', name:'Push Up', cat:'petto', muscles:'Petto, Tricipiti', icon:'💪'},
+  {id:'e5', name:'Squat', cat:'gambe', muscles:'Quadricipiti, Glutei, Femorali', icon:'🦵'},
+  {id:'e6', name:'Leg Press', cat:'gambe', muscles:'Quadricipiti, Glutei', icon:'🦵'},
+  {id:'e7', name:'Affondi', cat:'gambe', muscles:'Quadricipiti, Glutei, Femorali', icon:'🦵'},
+  {id:'e8', name:'Calf Raise', cat:'gambe', muscles:'Polpacci', icon:'🦵'},
+  {id:'e9', name:'Stacco da Terra', cat:'schiena', muscles:'Schiena, Glutei, Femorali', icon:'🏋️'},
+  {id:'e10', name:'Trazioni', cat:'schiena', muscles:'Dorsali, Bicipiti', icon:'💪'},
+  {id:'e11', name:'Rematore Bilanciere', cat:'schiena', muscles:'Dorsali, Trapezio', icon:'🏋️'},
+  {id:'e12', name:'Lat Machine', cat:'schiena', muscles:'Dorsali, Bicipiti', icon:'💪'},
+  {id:'e13', name:'Lento Avanti', cat:'spalle', muscles:'Deltoidi, Trapezio', icon:'🏋️'},
+  {id:'e14', name:'Alzate Laterali', cat:'spalle', muscles:'Deltoide Laterale', icon:'💪'},
+  {id:'e15', name:'Alzate Frontali', cat:'spalle', muscles:'Deltoide Frontale', icon:'💪'},
+  {id:'e16', name:'Curl Bilanciere', cat:'braccia', muscles:'Bicipiti', icon:'💪'},
+  {id:'e17', name:'Curl Manubri', cat:'braccia', muscles:'Bicipiti, Brachiale', icon:'💪'},
+  {id:'e18', name:'French Press', cat:'braccia', muscles:'Tricipiti', icon:'🏋️'},
+  {id:'e19', name:'Pushdown ai Cavi', cat:'braccia', muscles:'Tricipiti', icon:'💪'},
+  {id:'e20', name:'Plank', cat:'core', muscles:'Core, Addominali', icon:'🧘'},
+  {id:'e21', name:'Crunch', cat:'core', muscles:'Addominali', icon:'🧘'},
+  {id:'e22', name:'Russian Twist', cat:'core', muscles:'Obliqui, Core', icon:'🧘'},
+];
 
-// ===== DB (ridotta qui per spazio, puoi espandere) =====
-const EXERCISES_DB = Array.from({length:30},(_,i)=>({
-id:i+1,
-name:"Exercise "+(i+1),
-category:"Full",
-muscles:"various",
-isTimeBased:i%2===0,
-desc:"desc",
-gifUrl:"https://via.placeholder.com/100"
-}));
+const LS_WORKOUT = 'tfit_workout';
+const LS_TRAINED = 'tfit_trained';
+const TIMER_DURATION = 90;
 
-// ===== STATE =====
-let currentDate = new Date().toISOString().slice(0,10);
-let workouts = JSON.parse(localStorage.getItem("workouts")||"{}");
-let weights = JSON.parse(localStorage.getItem("weights")||"[]");
+// ============================================================
+// STATE
+// ============================================================
+let currentPage = 'library';
+let libFilter = 'tutti';
+let libSearch = '';
+let workout = loadWorkout();
+let trainedDays = loadTrained();
+let calYear, calMonth;
+let timerInterval = null;
+let timerRemaining = TIMER_DURATION;
+let timerAudioCtx = null;
 
-// ===== UI =====
-function populateExercises(){
-let s=document.getElementById("exerciseSelect");
-EXERCISES_DB.forEach(e=>{
-let o=document.createElement("option");
-o.value=e.id;o.textContent=e.name;
-s.appendChild(o);
-});
+function loadWorkout() {
+  try { return JSON.parse(localStorage.getItem(LS_WORKOUT)) || []; } catch { return []; }
+}
+function saveWorkout() {
+  localStorage.setItem(LS_WORKOUT, JSON.stringify(workout));
+}
+function loadTrained() {
+  try { return JSON.parse(localStorage.getItem(LS_TRAINED)) || {}; } catch { return {}; }
+}
+function saveTrained() {
+  localStorage.setItem(LS_TRAINED, JSON.stringify(trainedDays));
 }
 
-function getWorkout(){
-return workouts[currentDate]||[];
+// ============================================================
+// NAVIGATION
+// ============================================================
+function switchPage(name) {
+  currentPage = name;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'workout') renderWorkout();
+  if (name === 'calendar') renderCalendar();
+  if (name === 'library') renderLibrary();
 }
 
-function saveWorkout(w){
-workouts[currentDate]=w;
-localStorage.setItem("workouts",JSON.stringify(workouts));
-generateCalendar();
+// ============================================================
+// HEADER DATE
+// ============================================================
+function updateHeaderDate() {
+  const now = new Date();
+  const opts = { weekday: 'short', day: 'numeric', month: 'short' };
+  document.getElementById('header-date').textContent = now.toLocaleDateString('it-IT', opts);
+  document.getElementById('workout-date-label').textContent = 'Oggi, ' + now.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' });
 }
 
-function addExercise(){
-let id=parseInt(exerciseSelect.value);
-let w=getWorkout();
-w.push({id,done:false});
-saveWorkout(w);
-renderWorkout();
+// ============================================================
+// LIBRARY
+// ============================================================
+function renderLibrary() {
+  const list = document.getElementById('library-list');
+  const filtered = EXERCISES_DB.filter(ex => {
+    const matchCat = libFilter === 'tutti' || ex.cat === libFilter;
+    const matchSearch = ex.name.toLowerCase().includes(libSearch.toLowerCase()) || ex.muscles.toLowerCase().includes(libSearch.toLowerCase());
+    return matchCat && matchSearch;
+  });
+
+  list.innerHTML = filtered.map(ex => {
+    const inWorkout = workout.some(w => w.id === ex.id);
+    return `
+    <div class="exercise-card bg-card rounded-xl overflow-hidden flex gap-0">
+      <div class="gif-placeholder w-24 h-24 flex-shrink-0 flex items-center justify-center">
+        <div class="text-center">
+          <div class="text-3xl mb-1">${ex.icon}</div>
+          <div class="text-[10px] text-muted px-1">GIF</div>
+        </div>
+      </div>
+      <div class="flex-1 p-3 flex flex-col justify-between">
+        <div>
+          <div class="font-display font-bold text-base text-text leading-tight">${ex.name}</div>
+          <div class="text-xs text-muted mt-0.5">${ex.muscles}</div>
+          <span class="inline-block mt-1 text-[10px] bg-[#2a2a2a] text-accent px-2 py-0.5 rounded-full uppercase tracking-wide font-display font-600">${ex.cat}</span>
+        </div>
+      </div>
+      <div class="flex items-center pr-3">
+        <button onclick="${inWorkout ? 'removeFromWorkout' : 'addToWorkout'}('${ex.id}')"
+          class="w-9 h-9 rounded-full flex items-center justify-center transition-all text-lg
+          ${inWorkout ? 'bg-[#2a2a2a] text-muted' : 'bg-accent text-white hover:bg-accentd'}">
+          ${inWorkout ? '✓' : '+'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="text-center py-10 text-muted text-sm">Nessun esercizio trovato</div>';
+  }
 }
 
-function renderWorkout(){
-let list=document.getElementById("workoutList");
-list.innerHTML="";
-let w=getWorkout();
-
-w.forEach((ex,i)=>{
-let data=EXERCISES_DB.find(e=>e.id===ex.id);
-
-let div=document.createElement("div");
-div.className="flex justify-between bg-gray-900 p-2 mt-2 rounded";
-
-div.innerHTML=`
-<span class="${ex.done?'line-through opacity-40':''}">
-${i+1}. ${data.name}
-</span>
-
-<div class="space-x-2">
-<button onclick="move(${i},-1)">↑</button>
-<button onclick="move(${i},1)">↓</button>
-<button onclick="toggle(${i})">✔</button>
-</div>
-`;
-
-list.appendChild(div);
-});
+function addToWorkout(id) {
+  if (workout.some(w => w.id === id)) return;
+  const ex = EXERCISES_DB.find(e => e.id === id);
+  workout.push({
+    id: ex.id,
+    name: ex.name,
+    sets: [
+      { reps: 10, weight: 0, done: false },
+      { reps: 10, weight: 0, done: false },
+      { reps: 10, weight: 0, done: false },
+    ]
+  });
+  saveWorkout();
+  renderLibrary();
+  showToast(`${ex.name} aggiunto!`);
 }
 
-function toggle(i){
-let w=getWorkout();
-w[i].done=!w[i].done;
-saveWorkout(w);
-renderWorkout();
-startTimer();
+function removeFromWorkout(id) {
+  workout = workout.filter(w => w.id !== id);
+  saveWorkout();
+  renderLibrary();
 }
 
-function move(i,dir){
-let w=getWorkout();
-let j=i+dir;
-if(j<0||j>=w.length)return;
-[w[i],w[j]]=[w[j],w[i]];
-saveWorkout(w);
-renderWorkout();
-}
-
-// ===== TIMER =====
-let time=30,interval,wakeLock;
-
-async function startTimer(){
-document.getElementById("timerOverlay").classList.remove("hidden");
-time=30;
-
-if('wakeLock' in navigator){
-wakeLock=await navigator.wakeLock.request('screen');
-}
-
-interval=setInterval(()=>{
-time--;
-timeText.innerText=time;
-
-let offset=565-(565*time/30);
-progress.style.strokeDashoffset=offset;
-
-if(time<=0){
-clearInterval(interval);
-navigator.vibrate(500);
-beep();
-timerOverlay.classList.add("hidden");
-if(wakeLock) wakeLock.release();
-}
-},1000);
-}
-
-function addTime(){ time+=10; }
-
-function beep(){
-let ctx=new AudioContext();
-let osc=ctx.createOscillator();
-osc.connect(ctx.destination);
-osc.start();
-osc.stop(ctx.currentTime+0.2);
-}
-
-// ===== CALENDAR =====
-function generateCalendar(){
-let cal=document.getElementById("calendar");
-cal.innerHTML="";
-let now=new Date();
-let days=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
-
-for(let i=1;i<=days;i++){
-let dateStr=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-
-let div=document.createElement("div");
-div.className="p-2 bg-gray-800 rounded text-center";
-
-if(workouts[dateStr]) div.innerHTML=`${i}<div class="w-2 h-2 bg-orange-500 rounded-full mx-auto mt-1"></div>`;
-else div.innerHTML=i;
-
-div.onclick=()=>{
-currentDate=dateStr;
-renderWorkout();
-};
-
-cal.appendChild(div);
-}
-}
-
-// ===== PESO =====
-function saveWeight(){
-let val=parseFloat(weightInput.value);
-weights.push({date:Date.now(),value:val});
-localStorage.setItem("weights",JSON.stringify(weights));
-drawChart();
-}
-
-function drawChart(){
-let c=document.getElementById("weightChart");
-let ctx=c.getContext("2d");
-ctx.clearRect(0,0,c.width,c.height);
-
-if(weights.length<2)return;
-
-let max=Math.max(...weights.map(w=>w.value));
-let min=Math.min(...weights.map(w=>w.value));
-
-weights.forEach((w,i)=>{
-let x=i*(c.width/weights.length);
-let y=c.height-( (w.value-min)/(max-min)*c.height );
-ctx.lineTo(x,y);
+// Filter buttons
+document.getElementById('lib-filters').addEventListener('click', e => {
+  const btn = e.target.closest('[data-cat]');
+  if (!btn) return;
+  libFilter = btn.dataset.cat;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.remove('btn-accent');
+    b.classList.add('btn-ghost');
+  });
+  btn.classList.add('btn-accent');
+  btn.classList.remove('btn-ghost');
+  renderLibrary();
 });
 
-ctx.stroke();
+document.getElementById('lib-search').addEventListener('input', e => {
+  libSearch = e.target.value;
+  renderLibrary();
+});
+
+// ============================================================
+// WORKOUT
+// ============================================================
+function renderWorkout() {
+  const list = document.getElementById('workout-list');
+  const empty = document.getElementById('workout-empty');
+
+  if (workout.length === 0) {
+    empty.style.display = 'block';
+    list.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.innerHTML = workout.map((ex, ei) => `
+    <div class="bg-card rounded-xl p-4">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <div class="font-display font-bold text-lg text-text">${ex.name}</div>
+          <div class="text-xs text-muted">${ex.sets.length} serie</div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="addSet(${ei})" class="btn-ghost px-2 py-1 text-xs rounded-lg">+Serie</button>
+          <button onclick="removeExercise(${ei})" class="text-muted hover:text-red-400 transition-colors px-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Set headers -->
+      <div class="grid grid-cols-12 gap-2 mb-1 px-1">
+        <div class="col-span-1"></div>
+        <div class="col-span-3 text-xs text-muted text-center font-display uppercase tracking-wide">Serie</div>
+        <div class="col-span-3 text-xs text-muted text-center font-display uppercase tracking-wide">Rip.</div>
+        <div class="col-span-4 text-xs text-muted text-center font-display uppercase tracking-wide">KG</div>
+        <div class="col-span-1"></div>
+      </div>
+
+      ${ex.sets.map((set, si) => `
+      <div class="grid grid-cols-12 gap-2 items-center mb-2 ${set.done ? 'opacity-60' : ''}">
+        <div class="col-span-1">
+          <div class="w-5 h-5 rounded-full bg-[#2a2a2a] flex items-center justify-center text-xs text-muted font-display font-700">${si+1}</div>
+        </div>
+        <div class="col-span-3 text-center text-xs text-muted font-body">Serie ${si+1}</div>
+        <div class="col-span-3">
+          <input type="number" min="1" value="${set.reps}" class="fit-input text-center"
+            onchange="updateSet(${ei},${si},'reps',this.value)"/>
+        </div>
+        <div class="col-span-4">
+          <input type="number" min="0" step="2.5" value="${set.weight}" class="fit-input text-center"
+            onchange="updateSet(${ei},${si},'weight',this.value)"/>
+        </div>
+        <div class="col-span-1 flex justify-end">
+          <input type="checkbox" class="set-check" ${set.done?'checked':''}
+            onchange="toggleSet(${ei},${si},this.checked)"/>
+        </div>
+      </div>`).join('')}
+
+      <!-- Notes -->
+      <input type="text" placeholder="Note (opzionale)..." value="${ex.notes||''}"
+        class="fit-input mt-2 text-xs" onchange="updateNotes(${ei},this.value)"/>
+    </div>
+  `).join('');
 }
 
-// ===== INIT =====
-populateExercises();
-renderWorkout();
-generateCalendar();
-drawChart();
+function updateSet(ei, si, field, val) {
+  workout[ei].sets[si][field] = field === 'reps' ? parseInt(val)||1 : parseFloat(val)||0;
+  saveWorkout();
+}
 
-// ===== SERVICE WORKER =====
-if('serviceWorker' in navigator){
-navigator.serviceWorker.register(URL.createObjectURL(new Blob([`
+function toggleSet(ei, si, checked) {
+  workout[ei].sets[si].done = checked;
+  saveWorkout();
+  if (checked) startTimer();
+  renderWorkout();
+}
+
+function addSet(ei) {
+  workout[ei].sets.push({ reps: 10, weight: workout[ei].sets.at(-1)?.weight||0, done: false });
+  saveWorkout();
+  renderWorkout();
+}
+
+function removeExercise(ei) {
+  workout.splice(ei, 1);
+  saveWorkout();
+  renderWorkout();
+  renderLibrary();
+}
+
+function updateNotes(ei, val) {
+  workout[ei].notes = val;
+  saveWorkout();
+}
+
+// ============================================================
+// FINISH WORKOUT
+// ============================================================
+function finishWorkout() {
+  if (workout.length === 0) { showToast('Nessun esercizio nel workout!'); return; }
+  const today = getTodayKey();
+  trainedDays[today] = {
+    date: today,
+    exercises: workout.map(ex => ({
+      name: ex.name,
+      sets: ex.sets.map(s => ({ reps: s.reps, weight: s.weight, done: s.done }))
+    }))
+  };
+  saveTrained();
+  workout = [];
+  saveWorkout();
+  showToast('🔥 Allenamento salvato!');
+  setTimeout(() => { switchPage('calendar'); }, 800);
+}
+
+function getTodayKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerRemaining = TIMER_DURATION;
+  const overlay = document.getElementById('timer-overlay');
+  overlay.classList.add('show');
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timerRemaining--;
+    updateTimerDisplay();
+    if (timerRemaining <= 0) {
+      clearInterval(timerInterval);
+      playBeep();
+      setTimeout(() => overlay.classList.remove('show'), 500);
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerRemaining / 60);
+  const s = timerRemaining % 60;
+  document.getElementById('timer-display').textContent = `${m}:${String(s).padStart(2,'0')}`;
+  const circle = document.getElementById('timer-ring-circle');
+  const circumference = 283;
+  const progress = timerRemaining / TIMER_DURATION;
+  circle.style.strokeDashoffset = circumference * (1 - progress);
+}
+
+function skipTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  document.getElementById('timer-overlay').classList.remove('show');
+}
+
+function resetTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerRemaining = TIMER_DURATION;
+  updateTimerDisplay();
+  startTimer();
+}
+
+function playBeep() {
+  try {
+    if (!timerAudioCtx) timerAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = timerAudioCtx;
+    [0, 150, 300].forEach((delay, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = i === 2 ? 880 : 660;
+      gain.gain.setValueAtTime(.3, ctx.currentTime + delay/1000);
+      gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + delay/1000 + .25);
+      osc.start(ctx.currentTime + delay/1000);
+      osc.stop(ctx.currentTime + delay/1000 + .3);
+    });
+  } catch(e) {}
+}
+
+// ============================================================
+// CALENDAR
+// ============================================================
+function renderCalendar() {
+  const now = new Date();
+  if (calYear === undefined) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
+
+  const months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  document.getElementById('cal-title').textContent = `${months[calMonth]} ${calYear}`;
+
+  const firstDay = new Date(calYear, calMonth, 1);
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // Monday first
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+
+  const grid = document.getElementById('cal-grid');
+  const todayKey = getTodayKey();
+  let cells = '';
+
+  for (let i = 0; i < startDow; i++) {
+    const d = prevDays - startDow + i + 1;
+    cells += `<div class="cal-day other-month">${d}</div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = key === todayKey;
+    const isTrained = !!trainedDays[key];
+    let cls = 'cal-day';
+    if (isTrained) cls += ' trained';
+    else if (isToday) cls += ' today';
+    cells += `<div class="${cls}" onclick="showCalDetail('${key}')">${d}</div>`;
+  }
+  const total = startDow + daysInMonth;
+  const remaining = Math.ceil(total / 7) * 7 - total;
+  for (let i = 1; i <= remaining; i++) cells += `<div class="cal-day other-month">${i}</div>`;
+
+  grid.innerHTML = cells;
+
+  // Stats
+  const monthPrefix = `${calYear}-${String(calMonth+1).padStart(2,'0')}-`;
+  const sessions = Object.keys(trainedDays).filter(k => k.startsWith(monthPrefix)).length;
+  document.getElementById('stat-sessions').textContent = sessions;
+  document.getElementById('stat-total').textContent = Object.keys(trainedDays).length;
+
+  // Streak
+  let streak = 0;
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if (trainedDays[k]) streak++; else break;
+  }
+  document.getElementById('stat-streak').textContent = streak;
+
+  document.getElementById('cal-detail').classList.add('hidden');
+}
+
+function showCalDetail(key) {
+  const data = trainedDays[key];
+  const detail = document.getElementById('cal-detail');
+  const title = document.getElementById('cal-detail-title');
+  const content = document.getElementById('cal-detail-content');
+
+  if (!data) { detail.classList.add('hidden'); return; }
+
+  const [y, m, d] = key.split('-');
+  const months = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  title.textContent = `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+
+  content.innerHTML = data.exercises.map(ex => {
+    const doneSets = ex.sets.filter(s => s.done).length;
+    const vol = ex.sets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+    return `<div class="mb-2 pb-2 border-b border-[#2a2a2a] last:border-0">
+      <div class="font-display font-bold text-text text-sm">${ex.name}</div>
+      <div class="text-xs text-muted mt-0.5">${ex.sets.length} serie · ${doneSets} completate · Vol: ${vol}kg</div>
+    </div>`;
+  }).join('');
+
+  detail.classList.remove('hidden');
+}
+
+function calPrev() { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar(); }
+function calNext() { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar(); }
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ============================================================
+// PWA Service Worker
+// ============================================================
+if ('serviceWorker' in navigator) {
+  const sw = `
 self.addEventListener('install',e=>self.skipWaiting());
-self.addEventListener('fetch',e=>{});
-`],{type:'text/javascript'})));
+self.addEventListener('activate',e=>clients.claim());
+self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>new Response(''))));
+`;
+  const blob = new Blob([sw], { type: 'application/javascript' });
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
 }
 
+// ============================================================
+// INIT
+// ============================================================
+updateHeaderDate();
+renderLibrary();
 </script>
 
 </body>
