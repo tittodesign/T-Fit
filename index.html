@@ -2,161 +2,282 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>T-FIT ELITE PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PT-Pro Bodyweight App</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter:wght@400;700&display=swap');
-
         :root {
-            --accent: #FF6B00;
-            --bg: #000;
-            --surface: #121212;
-            --text: #fff;
-            --text-dim: #888;
+            --bg-color: #1a1a1a;
+            --orange: #ff6600;
+            --purple: #8a2be2;
+            --gray: #333;
+            --text: #ffffff;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
-
-        /* --- LAYOUT --- */
-        #app { height: 100%; display: flex; flex-direction: column; }
-        .screen { display: none; flex: 1; flex-direction: column; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
-        .active { display: flex; }
-
-        /* --- HEADER --- */
-        .header { padding: 20px 0; border-bottom: 1px solid #222; margin-bottom: 20px; }
-        .header h1 { font-family: 'Barlow Condensed'; font-size: 32px; font-weight: 900; text-transform: uppercase; }
-        .header span { color: var(--accent); }
-
-        /* --- ANIMAZIONE INCORPORATA (NON SERVONO FILE) --- */
-        .anim-box {
-            width: 100%;
-            height: 200px;
-            background: #0a0a0a;
-            border-radius: 20px;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            border: 1px solid #222;
+        }
+
+        /* Progress Bar */
+        #progress-container {
+            width: 100%;
+            height: 5px;
+            background: #000;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--purple);
+            transition: width 0.3s;
+        }
+
+        header {
+            padding: 20px;
+            text-align: center;
+            color: var(--orange);
+        }
+
+        /* Calendar */
+        #calendar-container {
+            background: var(--gray);
+            padding: 15px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
             margin-bottom: 20px;
         }
-        .dot { width: 40px; height: 40px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; box-shadow: 0 0 20px var(--accent); }
-        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+        .day {
+            padding: 10px 0;
+            cursor: pointer;
+            border-radius: 5px;
+            position: relative;
+        }
+        .day:hover { background: var(--purple); }
+        .has-workout::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--orange);
+            border-radius: 50%;
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
 
-        /* --- CALENDARIO STORICO --- */
-        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; background: var(--surface); padding: 15px; border-radius: 20px; }
-        .day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; background: #1a1a1a; }
-        .day.today { border: 2px solid var(--accent); color: var(--accent); font-weight: bold; }
-        .day.completed { background: var(--accent); color: #000; }
+        /* Exercise List */
+        .workout-list { width: 90%; max-width: 500px; }
+        .exercise-card {
+            background: var(--gray);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            transition: 0.3s;
+        }
+        .exercise-card.completed { opacity: 0.4; text-decoration: line-through; border-left: 5px solid var(--purple); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; }
+        .anim-box { width: 100%; height: 200px; background: #000; margin-top: 10px; border-radius: 5px; overflow: hidden; display: none; }
+        .anim-box img { width: 100%; height: 100%; object-fit: contain; }
+        
+        /* Buttons */
+        button {
+            background: var(--orange);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .info-btn { background: var(--purple); margin-right: 5px; }
 
-        /* --- UI ELEMENTS --- */
-        .card { background: var(--surface); padding: 20px; border-radius: 20px; margin-bottom: 15px; }
-        .btn { background: var(--accent); color: #000; border: none; padding: 18px; border-radius: 15px; font-weight: 800; text-transform: uppercase; width: 100%; cursor: pointer; }
-        .btn-outline { background: #222; color: #fff; margin-top: 10px; }
+        /* Overlay Timer */
+        #timer-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        #timer-display { font-size: 8rem; color: var(--purple); margin-bottom: 20px; }
+        #timer-label { font-size: 1.5rem; color: var(--orange); margin-bottom: 40px; }
 
-        /* --- NAVIGATION --- */
-        nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: space-around; padding: 15px 0 30px; border-top: 1px solid #222; }
-        .nav-item { color: var(--text-dim); text-decoration: none; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .nav-item.active { color: var(--accent); }
     </style>
 </head>
 <body>
 
-<div id="app">
-    <section id="dash" class="screen active">
-        <div class="header"><h1>T-FIT <span>ELITE</span></h1></div>
-        <div class="card">
-            <h3>Allenamento Odierno</h3>
-            <p style="color:var(--text-dim); font-size:14px; margin: 10px 0 20px;">Full Body - Sessione A</p>
-            <button class="btn" onclick="showScreen('player')">Inizia Ora</button>
-        </div>
-        <div class="header"><h1>IL TUO <span>STORICO</span></h1></div>
-        <div class="calendar" id="calendar-grid"></div>
-    </section>
+<div id="progress-container"><div id="progress-bar"></div></div>
 
-    <section id="player" class="screen">
-        <div class="anim-box">
-            <div class="dot"></div> </div>
-        <h2 id="ex-title" style="font-family:'Barlow Condensed'; font-size:32px;">PUSH UP</h2>
-        <p id="ex-cat" style="color:var(--accent); font-weight:700; margin-bottom:20px;">PETTO</p>
-        
-        <div class="card">
-            <div style="display:flex; justify-content:space-between;">
-                <span>Serie 1/4</span>
-                <strong>12 Reps</strong>
-            </div>
-        </div>
+<header>
+    <h1>BODYWEIGHT COACH</h1>
+</header>
 
-        <div style="margin-top:auto;">
-            <button class="btn" onclick="nextEx()">Prossimo Esercizio</button>
-            <button class="btn btn-outline" onclick="showScreen('dash')">Termina Sessione</button>
-        </div>
-    </section>
+<div id="calendar-container">
+    <h3 id="month-name">Aprile 2024</h3>
+    <div class="calendar-grid" id="calendar"></div>
+</div>
 
-    <nav>
-        <a href="#" class="nav-item active" onclick="showScreen('dash')">Home</a>
-        <a href="#" class="nav-item" onclick="showScreen('player')">Workout</a>
-        <a href="#" class="nav-item">Profilo</a>
-    </nav>
+<div class="workout-list" id="workout-area">
+    </div>
+
+<div id="timer-overlay">
+    <div id="timer-label">RECUPERO</div>
+    <div id="timer-display">00</div>
+    <button onclick="addTime()" style="font-size: 1.5rem; padding: 20px 40px;">+10 SECONDI</button>
 </div>
 
 <script>
-    const exercises = [
-        { n: "PUSH UP", c: "PETTO" },
-        { n: "SQUAT", c: "GAMBE" },
-        { n: "TRAZIONI", c: "DORSO" },
-        { n: "PLANK", c: "CORE" }
+    // Database Esercizi con placeholder GIF
+    const exerciseDB = [
+        { id: 1, name: "Push-Ups", type: "reps", desc: "Mantieni il core contratto, scendi col petto quasi a terra.", gif: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF6M2Z6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6JmRjPTEmZ3c9MTI4MA/3o7TKu6WJxtZvbqKv6/giphy.gif" },
+        { id: 2, name: "Squats", type: "reps", desc: "Peso sui talloni, schiena dritta, scendi oltre i 90 gradi.", gif: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF6M2Z6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6JmRjPTEmZ3c9MTI4MA/26u49w47AfX7hZ0n6/giphy.gif" },
+        { id: 3, name: "Plank", type: "time", desc: "Corpo dritto come una tavola, contrai glutei e addome.", gif: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF6M2Z6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6JmRjPTEmZ3c9MTI4MA/3o7TKu6WJxtZvbqKv6/giphy.gif" },
+        { id: 4, name: "Burpees", type: "reps", desc: "Dalla posizione eretta a terra e poi un salto esplosivo.", gif: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF6M2Z6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6Z3R6JmRjPTEmZ3c9MTI4MA/26u4b4pX7pGqM6k7u/giphy.gif" }
     ];
-    let currentIdx = 0;
 
-    // Funzione Cambio Schermata
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if(id === 'dash') document.querySelectorAll('.nav-item')[0].classList.add('active');
-        if(id === 'player') document.querySelectorAll('.nav-item')[1].classList.add('active');
+    let currentWorkout = [
+        { ...exerciseDB[0], goal: "15 Reps", done: false },
+        { ...exerciseDB[2], goal: "45 Sec", done: false },
+        { ...exerciseDB[1], goal: "20 Reps", done: false }
+    ];
+
+    let timerInterval;
+    let timeLeft = 0;
+
+    // Wake Lock
+    if ('wakeLock' in navigator) {
+        navigator.wakeLock.request('screen').catch(console.error);
     }
 
-    // Funzione Allenamento
-    function nextEx() {
-        currentIdx++;
-        if(currentIdx >= exercises.length) {
-            alert("Allenamento Completato! Salvataggio nello storico...");
-            currentIdx = 0;
-            showScreen('dash');
-            markDateAsCompleted();
+    function initCalendar() {
+        const cal = document.getElementById('calendar');
+        for (let i = 1; i <= 30; i++) {
+            const day = document.createElement('div');
+            day.className = 'day' + (i === 14 ? ' has-workout' : '');
+            day.innerText = i;
+            cal.appendChild(day);
+        }
+    }
+
+    function renderWorkout() {
+        const area = document.getElementById('workout-area');
+        area.innerHTML = '';
+        let completedCount = 0;
+
+        currentWorkout.forEach((ex, index) => {
+            if (ex.done) completedCount++;
+            const card = document.createElement('div');
+            card.className = `exercise-card ${ex.done ? 'completed' : ''}`;
+            card.innerHTML = `
+                <div class="card-header">
+                    <div>
+                        <strong>${ex.name}</strong><br>
+                        <small>${ex.goal}</small>
+                    </div>
+                    <div>
+                        <button class="info-btn" onclick="toggleInfo(${index})">i</button>
+                        <button onclick="completeStep(${index})">${ex.type === 'time' ? 'START' : 'DONE'}</button>
+                    </div>
+                </div>
+                <div id="info-${index}" class="anim-box">
+                    <img src="${ex.gif}" alt="${ex.name}">
+                    <p style="padding:10px; font-size:0.8rem;">${ex.desc}</p>
+                </div>
+            `;
+            area.appendChild(card);
+        });
+
+        document.getElementById('progress-bar').style.width = (completedCount / currentWorkout.length * 100) + '%';
+    }
+
+    function toggleInfo(index) {
+        const box = document.getElementById(`info-${index}`);
+        box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function completeStep(index) {
+        const ex = currentWorkout[index];
+        if (ex.type === 'time' && !ex.done) {
+            startTimer(parseInt(ex.goal), ex.name, () => {
+                ex.done = true;
+                renderWorkout();
+                startRestTimer();
+            });
         } else {
-            document.getElementById('ex-title').innerText = exercises[currentIdx].n;
-            document.getElementById('ex-cat').innerText = exercises[currentIdx].c;
+            ex.done = true;
+            renderWorkout();
+            startRestTimer();
         }
     }
 
-    // Generazione Calendario Reale
-    function renderCalendar() {
-        const grid = document.getElementById('calendar-grid');
-        const now = new Date();
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    function startTimer(seconds, label, callback) {
+        const overlay = document.getElementById('timer-overlay');
+        const display = document.getElementById('timer-display');
+        const labelEl = document.getElementById('timer-label');
         
-        grid.innerHTML = '';
-        for(let i = 1; i <= daysInMonth; i++) {
-            const dayDiv = document.createElement('div');
-            dayDiv.className = 'day';
-            dayDiv.innerText = i;
-            if(i === now.getDate()) dayDiv.className += ' today';
-            grid.appendChild(dayDiv);
-        }
+        overlay.style.display = 'flex';
+        labelEl.innerText = label;
+        timeLeft = seconds;
+        
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            display.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                beep();
+                vibrate();
+                overlay.style.display = 'none';
+                if (callback) callback();
+            }
+        }, 1000);
     }
 
-    function markDateAsCompleted() {
-        const today = new Date().getDate();
-        const days = document.querySelectorAll('.day');
-        days[today - 1].classList.add('completed');
+    function startRestTimer() {
+        startTimer(30, "RECUPERO", null);
     }
 
-    // Inizializzazione
-    renderCalendar();
+    function addTime() {
+        timeLeft += 10;
+        document.getElementById('timer-display').innerText = timeLeft;
+    }
+
+    function beep() {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        osc.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+    }
+
+    function vibrate() {
+        if (navigator.vibrate) navigator.vibrate(500);
+    }
+
+    window.onload = () => {
+        initCalendar();
+        renderWorkout();
+    };
 </script>
 </body>
 </html>
